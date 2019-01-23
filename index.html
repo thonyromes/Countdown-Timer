@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>JCountDown</title>
+		<style>
+		
+			*, html, body {
+				box-border: border-box;
+			}
+		
+			body {
+				padding: 0;
+				margin: 0;
+				outline: 0;
+				font-family: Verdana, sans-serif;
+				font-size: 100%;
+				color: #111;
+				background-color: #fefefe;
+			}
+			.timer {
+				width: 90%;
+				margin: 8rem auto;
+				text-align: center;
+				font-size: 6rem;
+			}
+			
+			.timer.danger {
+				color: #ee0000;
+				animation: dangerPulse 1s ease infinite;
+			}
+			
+			.btns {
+				width: 90%;
+				margin: 0 auto;
+				padding-top: 3rem;
+				text-align: center;
+				display: flex;
+				flex-flow: row wrap;
+				justify-content: center;
+				align-items: center;
+			}
+			
+			.btns button {
+				border: none;
+				color: white;
+				background-color: #333;
+				padding: 1rem 0;
+				border-radius: 0.25rem;
+				cursor: pointer;
+				font-size: 1.15rem;
+				transition: 0.3s ease;
+				flex: 0 0 8rem;
+				margin: 0.5rem;
+			}
+			
+			.btns button:not(.active) {
+				box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.5);
+			}
+			
+			.btns button:not(.active):hover {
+				background-color: #eee;
+				color: #333;
+				box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.25);
+			}
+			
+			button.active, button.active:hover {
+				background-color: #ccc;
+				color: #fff;
+				cursor: auto;
+			}
+			
+			.btns input:not([type="radio"]) {
+				border: 1px solid #ddd;
+				padding: 1rem 0.25rem;
+				flex: 1 1 auto;
+				border-radius: 0.25rem;
+				color: #222;
+				margin: 0.5rem;
+			}
+
+			.btns label {
+				margin: 0.5rem;
+				flex: 0 0 7rem;
+				display: flex;
+				flex-flow: row nowrap;
+				justify-content: space-between;
+				align-items: center;
+				cursor: pointer;
+			}
+			
+			.customRadio {
+				flex: 0 0 1.5rem;
+				height: 1.5rem;
+				line-height: 1.5rem;
+				background-color: #fbfbfb;
+				border-radius: 5rem;
+				border: 1px solid #aaa;
+				display: flex;
+				flex-flow: row nowrap;
+				justify-content: center;
+				align-items: center;
+				transition: 0.3s ease;
+			}
+			
+			label:hover > .customRadio {
+				border: 1px solid #333;
+			}
+			
+			label input {
+				position: absolute;
+				display: none;
+			}
+			
+			label input:checked + span {
+				background-color: #333;
+				border: 1px solid #333;
+			}
+			
+			.customRadio > span {
+				flex: 0 0 0.75rem;
+				height: 0.75rem;
+				line-height: 0.75rem;
+				background-color: #fbfbfb;
+				border-radius: 5rem;
+			}
+			
+			@keyframes dangerPulse{
+				from {
+					opacity: 1;
+				}
+				to {
+					opacity: 0.25;
+				}
+			}
+			
+			@media screen and (max-width: 980px) {
+				.timer {
+					font-size: 4rem;
+				}
+			
+			}
+			
+			@media screen and (max-width: 768px) {
+				.timer {
+					font-size: 3rem;
+				}
+			
+			}
+			
+			@media screen and (max-width: 480px) {
+				.timer {
+					font-size: 1.5rem;
+					margin-top: 4rem;
+				}
+			
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div class="btns">
+			<label for="secs">
+				<input type="radio" name="times" checked="checked" id="secs">
+				<span class="customRadio">
+					<span></span>
+				</span>
+				Seconds
+			</label>
+			<label for="mins">
+				<input type="radio" name="times" id="mins">
+				<span class="customRadio">
+					<span></span>
+				</span>
+				Minutes
+			</label>
+
+			<input type="number" placeholder="Enter Timer (Max = 60Mins)" max="60" id="timerVal">
+			<button onclick="startTimerFunction();">Start</button>
+			<button onclick="stopTimerFunction();">Stop</button>
+			<button onclick="continueTimerFunction();">Continue</button>
+			<button onclick="restartTimerFunction();">Restart</button>
+		</div>
+		<div class="timer" id="timer"></div>
+	
+		<script type="text/javascript">			
+			// create a new date with timer
+			class timerObj {
+				
+				constructor(userTime){
+					this.currentTime = new Date().getTime();
+					this.currentTimer = this.currentTime;
+					this.newTime = this.currentTimer + userTime;
+					this.loc = document.getElementById("timer");
+				}
+				
+				timer() {
+					this.distance = this.newTime - this.currentTimer;
+					
+					if (this.distance > 0) {
+						this.currentTimer += 20;
+						this.loc.classList.remove("danger");
+						if (this.distance < 60000) {
+							this.loc.classList.add("danger");
+							dangerSound.play();
+						}
+					}else {
+						this.distance = 0;
+						this.currentTimer += 0;
+						dangerSound.pause();
+						stopSound.play();
+						this.stop();
+					}
+					
+					this.days = Math.floor(this.distance / (1000 * 60 * 60 * 24));
+					this.hours = Math.floor((this.distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+					this.mins = Math.floor((this.distance % (1000 * 60 * 60)) / (1000 * 60));
+					this.secs = Math.floor((this.distance % (1000 * 60)) / (1000));
+					this.msecs = Math.floor((this.distance % (1000)) / (10));
+					
+					this.days = append0(this.days);
+					this.hours = append0(this.hours);
+					this.mins = append0(this.mins);
+					this.secs = append0(this.secs);
+					this.msecs = append0(this.msecs);
+										
+					this.loc.innerText = /*this.days + "d " + this.hours + "h " +*/ this.mins + "m : " + this.secs + "s : " + this.msecs + "ms";
+				}
+				
+				start() {
+					this.timerInterval = setInterval(updateTimer, 20);
+				}
+				
+				stop () {
+					clearInterval(this.timerInterval);
+				}
+				
+				restart () {
+					this.stop();
+					this.currentTimer = this.currentTime;
+					this.start();
+				}
+			}
+			
+			class soundObj {
+				constructor(src, loop) {
+					this.sound = document.createElement("audio");
+					if (src != ""){this.sound.src = src}
+					this.sound.setAttribute("preload", "auto");
+					this.sound.setAttribute("controls", "none");
+					if (loop != undefined) {this.sound.setAttribute(loop, loop)}
+					document.body.insertBefore(this.sound, document.body.childNodes[0]);
+					this.sound.style.display = "none";
+				}
+				
+				play() {
+					this.sound.play();
+				}
+				
+				pause() {
+					this.sound.pause();
+				}
+			}
+			
+			let uTime;
+			let btns = document.querySelectorAll(".btns > button");
+			let times = document.getElementsByName("times");
+			
+			dangerSound = new soundObj("");
+			stopSound = new soundObj("");
+
+			freshTimer = new timerObj(0);
+			freshTimer.timer();
+			
+			function startTimerFunction() {
+				//timeCheck = times[1].checked ? (1000) : (1000 * 60);
+				//uTime = (uTime > 60) ? 60 : uTime;
+				//uTime = uTime * timeCheck;
+				uTime = Number(document.getElementById("timerVal").value);
+				
+				if (times[1].checked){
+					timeCheck = (1000 * 60);
+					if (uTime > 60) {
+						uTime = 60;
+					}
+				} else {
+					timeCheck = 1000;
+					if (uTime > 3600) {
+						uTime = 3600;
+					}
+				}
+				
+				uTime = uTime * timeCheck;
+				
+				if (isNaN(uTime) || (uTime <= 0)) {
+					removeActiveClass(0);
+					uTime = 0;
+				}else {
+					removeActiveClass(1);
+				}	
+				
+				freshTimer = new timerObj(uTime);
+				freshTimer.start();
+				
+				dangerSound = new soundObj("sound-bg-03.mp3");
+				stopSound = new soundObj("beep-01.mp4", "loop");
+			
+			}
+			
+			function stopTimerFunction() {
+				freshTimer.stop();
+				dangerSound.pause();
+				stopSound.pause();
+				
+				addActiveClass(1);
+
+			}
+			
+			function continueTimerFunction() {
+				freshTimer.start();
+				
+				removeActiveClass(1);
+			}
+			
+			function restartTimerFunction() {
+				freshTimer.restart();
+				
+				removeActiveClass(1);
+			}
+			
+			function updateTimer() {
+				freshTimer.timer();
+			}
+			
+			function append0(time) {
+				return (time < 10) ? "0" + time : time;
+			}
+						
+			function removeActiveClass(ind) {
+			
+				btns.forEach( function(value, index) {
+						value.setAttribute("disabled", "disabled");
+						value.classList.add("active");
+					if (index === ind) {
+						value.removeAttribute("disabled");
+						value.classList.remove("active");
+					}
+				});
+			}
+			
+			removeActiveClass(0);
+			
+			function addActiveClass(ind) {
+			
+				btns.forEach( function(value, index) {
+					value.removeAttribute("disabled");
+					value.classList.remove("active");
+					if (index === ind) {
+						value.setAttribute("disabled", "disabled");
+						value.classList.add("active");
+					}
+				});
+			}
+			
+		</script>
+	</body>
+</html>
+
+
